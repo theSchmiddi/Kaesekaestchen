@@ -9,6 +9,7 @@ function GameBoard() {
     turn: false,
     score: 0,
   });
+  const [startGame, setStartGame] = useState(false);
 
   useEffect(() => {
     console.log('roomId:', roomId);
@@ -16,6 +17,10 @@ function GameBoard() {
 
     socket.on('gameInfo', (info) => {
       setGameInfo(info);
+    });
+
+    socket.on('startGame', () => {
+      setStartGame(true);
     });
   }, []);
 
@@ -27,7 +32,7 @@ function GameBoard() {
         <p>{gameInfo.turn ? 'Du bist an der Reihe' : 'Der andere Spieler ist an der Reihe'}</p>
       </div>
       <div className="game-board">
-        <Board />
+        {startGame?<Board />:<></>}
       </div>
       <div className="game-controls">
         <button onClick={() => console.log('Spiel reseten')}>Reset</button>

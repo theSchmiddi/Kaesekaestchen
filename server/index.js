@@ -19,13 +19,9 @@ io.on("connection", (socket) => {
       gameData.set(roomId, {
         player1: socket.id,
         player2: null,
-        board: Array.from({ length: 6 }, () =>
-          Array.from({ length: 6 }, () => ({
-            horizontal: false,
-            vertical: false,
-            owner: null,
-          }))
-        ),
+        squares: Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => null)),
+        edges: Array.from({ length: 18 }, () => false),
+        currentPlayer: 1,
       });
       socket.join(roomId);
       console.log(`Room ${roomId} created`);
@@ -88,27 +84,60 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("addEdge", ({ roomId, row, col, edge, player }) => {
+  socket.on("makeMove", ({ roomId, player, row, col, edge }) => {
     const game = gameData.get(roomId);
+    console.log(roomId + " : "+ player+ " : " + row+" : "+ col +" : "+edge)
     if (game) {
-      const { board } = game;
-      if (board[row][col][edge]) {
+      const { squares, edges, player1, player2 } = game;
+      const currentPlayer = player === player1 ? 1 : 2; 
+      if (currentPlayer !== game.currentPlayer) {
+        console.log("Nicht am Zug");
+        return;
+      }
+      if (edges[row * 4 + col]) {
         console.log("Kante bereits gesetzt");
         return;
       }
-      board[row][col][edge] = true;
-      board[row][col].owner = player;
-      io.to(roomId).emit("updateBoard", board);
-    } else {
-      console.log(`Raum ${roomId} nicht gefunden`);
-    }
-  });
-
-  socket.on("makeMove", ({ roomId, newBoard, nextPlayer }) => {
-    const game = gameData.get(roomId);
-    if (game) {
-      game.board = newBoard;
-      io.to(roomId).emit("updateBoard", { newBoard, nextPlayer });
+      edges[row * 4 + col] = true;
+      let score = 0;
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+          const square = squares[i][j];
+          if (
+            edges[i * 4 + j] &&
+            edges[i * 4 + j + 4] &&
+            edges[(i + 1) * 4 + j] &&
+            edges[i * 4 + j] &&
+            square === null
+          ) {
+            score++;
+            squares[i][j] = currentPlayer;
+            game.currentPlayer = currentPlayer;
+          }
+        }
+      }
+      if (score === 0) {
+        game.currentPlayer = currentPlayer === 1 ? 2 : 1;
+      }
+      console.log("hurra")
+      io.to(roomId).emit("updateBoard", { squares, edges, nextPlayer: game.currentPlayer });
+      if (score === 0 && edges.every((edge) => edge)) {
+        const winner = squares.reduce((acc, row) => {
+          row.forEach((square) => {
+            if (square !== null) {
+              acc[square - 1]++;
+            }
+          });
+          return acc;
+        }, [0, 0]);
+        if (winner[0] > winner[1]) {
+          io.to(roomId).emit("gameOver", 1);
+        } else if (winner[1] > winner[0]) {
+          io.to(roomId).emit("gameOver", 2);
+        } else {
+          io.to(roomId).emit("gameOver", 0);
+        }
+      }
     } else {
       console.log(`Raum ${roomId} nicht gefunden`);
     }

@@ -1,88 +1,74 @@
 import React, { useState, useEffect } from "react";
 import "./board.css";
+import { socket, roomId } from './StartScreen';
 
 function Board() {
-  const [board, setBoard] = useState(
-    Array.from({ length: 9 }, () =>
-      Array.from({ length: 9 }, () => ({
-        top: false,
-        right: false,
-        bottom: false,
-        left: false,
-        owner: null,
-      }))
-    )
-  );
+  const [squares, setSquares] = useState(Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => null)));
+  const [edges, setEdges] = useState(Array.from({ length: 18 }, () => false));
   const [currentPlayer, setCurrentPlayer] = useState(1);
 
   useEffect(() => {
-    // Hier können Sie den Code für die Socket-Verbindung hinzufügen
+    socket.on("updateBoard", ({ squares, edges, nextPlayer }) => {
+      setSquares(squares);
+      setEdges(edges);
+      console.log(edges)
+      setCurrentPlayer(nextPlayer);
+    });
+    socket.on("gameOver", (winner) => {
+      alert(`Spieler ${winner} hat gewonnen!`);
+    });
   }, []);
 
-  const getNextPlayer = () => {
-    return currentPlayer === 1 ? 2 : 1;
+  const handleMakeMove = (row, col, edge) => {
+    socket.emit("makeMove", {
+      roomId: roomId,
+      player: socket.id,
+      row,
+      col,
+      edge,
+    });
   };
 
-  const handleMakeMove = ({ row, col, edge }) => {
-    const newBoard = board.map((rowCells, rowIndex) =>
-      row === rowIndex
-        ? rowCells.map((cell, colIndex) =>
-            col === colIndex
-              ? { ...cell, [edge]: true, owner: currentPlayer }
-              : cell
-          )
-        : rowCells
-    );
-    setBoard(newBoard);
-    setCurrentPlayer(getNextPlayer());
-  };
-  
-  const renderCell = (row, col) => {
-    const cell = board[row][col];
-    const owner = cell.owner;
-    const top = row === 0 || board[row - 1][col].bottom;
-    const right = col === 8 || board[row][col + 1].left;
-    const bottom = row === 8 || board[row + 1][col].top;
-    const left = col === 0 || board[row][col - 1].right;
-    const topClassName = `board-cell-top${top ? " board-cell-top-set" : ""}${
-      owner === 1 ? " board-cell-top-player1" : owner === 2 ? " board-cell-top-player2" : ""
-    }`;
-    const rightClassName = `board-cell-right${
-      right ? " board-cell-right-set" : ""
-    }${owner === 1 ? " board-cell-right-player1" : owner === 2 ? " board-cell-right-player2" : ""}`;
-    const bottomClassName = `board-cell-bottom${
-      bottom ? " board-cell-bottom-set" : ""
-    }${owner === 1 ? " board-cell-bottom-player1" : owner === 2 ? " board-cell-bottom-player2" : ""}`;
-    const leftClassName = `board-cell-left${left ? " board-cell-left-set" : ""}${
-      owner === 1 ? " board-cell-left-player1" : owner === 2 ? " board-cell-left-player2" : ""
-    }`;
-    const handleClick = (edge) => () => {
-      handleMakeMove({ row, col, edge });
-    };
+  const renderSquare = (row, col) => {
+    const square = squares[row][col];
     return (
-      <div key={`${row}-${col}`} className="board-cell">
-        <div className={topClassName}></div>
-        <div className={rightClassName}></div>
-        <div className={bottomClassName}></div>
-        <div className={leftClassName}></div>
-        {row < 8 && col < 8 && <div className="board-cell-square"></div>}
-        {row === 8 && col < 8 && <div className="board-cell-square board-cell-bottom"></div>}
-        {col === 8 && row < 8 && <div className="board-cell-square board-cell-right"></div>}
+      <div key={`${row}-${col}`} className="board-square-container">
+        {col === 0 && (
+          <div className="board-square-buttons">
+            <button className="board-edge-vertical" disabled={edges[row * 3]} onClick={() => handleMakeMove(row, col, "top")}></button>
+          </div>
+        )}
+        <button className="board-square" disabled={square !== null} onClick={() => handleMakeMove(row, col, null)}>
+          {square !== null && <div className={`board-square-player${square}`}></div>}
+        </button>
+        {row === 0 && (
+          <div className="board-square-buttons">
+            <button className="board-edge-horizontal" disabled={edges[col * 2 + 1]} onClick={() => handleMakeMove(row, col, "left")}></button>
+          </div>
+        )}
+        <div className="board-square-buttons">
+          <button className="board-edge-horizontal" disabled={edges[row * 3 + col * 2]} onClick={() => handleMakeMove(row, col, "bottom")}></button>
+          <button className="board-edge-vertical" disabled={edges[row * 3 + col * 2 + 1]} onClick={() => handleMakeMove(row, col, "right")}></button>
+        </div>
       </div>
     );
   };
 
   const renderRow = (rowIndex) => {
-    const cells = [];
-    for (let colIndex = 0; colIndex < 9; colIndex++) {
-      cells.push(renderCell(rowIndex, colIndex));
+    const squares = [];
+    for (let colIndex = 0; colIndex < 4; colIndex++) {
+      squares.push(renderSquare(rowIndex, colIndex));
     }
-    return <div key={rowIndex} className="board-row">{cells}</div>;
+    return (
+      <div key={rowIndex} className="board-row">
+        {squares}
+      </div>
+    );
   };
 
   const renderBoard = () => {
     const rows = [];
-    for (let rowIndex = 0; rowIndex < 9; rowIndex++) {
+    for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
       rows.push(renderRow(rowIndex));
     }
     return <div className="board">{rows}</div>;
