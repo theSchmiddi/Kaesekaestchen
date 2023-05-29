@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "./board.css";
-import { socket, roomId } from './StartScreen';
+import { socket, roomId } from "./StartScreen";
 
 function Board() {
-  const [squares, setSquares] = useState(Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => null)));
-  const [edges, setEdges] = useState(Array.from({ length: 18 }, () => false));
+  const [squares, setSquares] = useState(Array.from({ length: 16 }, () => 0));
+  const [edges, setEdges] = useState(Array.from({ length: 40 }, () => 0));
   const [currentPlayer, setCurrentPlayer] = useState(1);
 
   useEffect(() => {
     socket.on("updateBoard", ({ squares, edges, nextPlayer }) => {
       setSquares(squares);
       setEdges(edges);
-      console.log(edges)
       setCurrentPlayer(nextPlayer);
     });
     socket.on("gameOver", (winner) => {
@@ -19,59 +18,79 @@ function Board() {
     });
   }, []);
 
-  const handleMakeMove = (row, col, edge) => {
+  const handleMakeMove = (edgesID, squareID) => {
     socket.emit("makeMove", {
       roomId: roomId,
       player: socket.id,
-      row,
-      col,
-      edge,
+      edgesID,
+      squareID,
     });
   };
 
-  const renderSquare = (row, col) => {
-    const square = squares[row][col];
-    return (
-      <div key={`${row}-${col}`} className="board-square-container">
-        {col === 0 && (
-          <div className="board-square-buttons">
-            <button className="board-edge-vertical" disabled={edges[row * 3]} onClick={() => handleMakeMove(row, col, "top")}></button>
-          </div>
-        )}
-        <button className="board-square" disabled={square !== null} onClick={() => handleMakeMove(row, col, null)}>
-          {square !== null && <div className={`board-square-player${square}`}></div>}
-        </button>
-        {row === 0 && (
-          <div className="board-square-buttons">
-            <button className="board-edge-horizontal" disabled={edges[col * 2 + 1]} onClick={() => handleMakeMove(row, col, "left")}></button>
-          </div>
-        )}
-        <div className="board-square-buttons">
-          <button className="board-edge-horizontal" disabled={edges[row * 3 + col * 2]} onClick={() => handleMakeMove(row, col, "bottom")}></button>
-          <button className="board-edge-vertical" disabled={edges[row * 3 + col * 2 + 1]} onClick={() => handleMakeMove(row, col, "right")}></button>
-        </div>
-      </div>
-    );
+  const checkColourEdges = (edgesID) => {
+    if (edges[edgesID] === 1) {
+      return "red";
+    } else if (edges[edgesID] === 2) {
+      return "blue";
+    }
+    return "green";
   };
 
-  const renderRow = (rowIndex) => {
-    const squares = [];
-    for (let colIndex = 0; colIndex < 4; colIndex++) {
-      squares.push(renderSquare(rowIndex, colIndex));
+  const checkColourSquares = (squaresID) => {
+    if (squares[squaresID] === 1) {
+      return "red";
+    } else if (squares[squaresID] === 2) {
+      return "blue";
     }
-    return (
-      <div key={rowIndex} className="board-row">
-        {squares}
-      </div>
-    );
+    return "grey";
   };
 
   const renderBoard = () => {
-    const rows = [];
-    for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
-      rows.push(renderRow(rowIndex));
+    let edgesID = 0;
+    let squareID = 0;
+    const boardElements = [];
+
+    for (let i = 0; i < 9; i++) {
+      if (i % 2 === 0) {
+        for (let j = 0; j < 4; j++) {
+          boardElements.push(
+            <button
+              key={`edge-horizontal-${edgesID}`}
+              className="board-edge-horizontal"
+              onClick={() => handleMakeMove(edgesID, squareID)}
+              style={{ backgroundColor: checkColourEdges(edgesID) }}
+            />
+          );
+          edgesID++;
+        }
+      } else {
+        for (let j = 0; j < 9; j++) {
+          if (j % 2 === 0) {
+            console.log((edges[edgesID] !== 0)+ " : " + edges[edgesID])
+            boardElements.push(
+              <button
+                key={`edge-vertical-${edgesID}`}
+                className="board-edge-vertical"
+                onClick={() => handleMakeMove(edgesID, squareID)}
+                style={{ backgroundColor: checkColourEdges(edgesID) }}
+              />
+            );
+            edgesID++;
+          } else {
+            boardElements.push(
+              <div
+                key={`square-${squareID}`}
+                className="board-square"
+                style={{ backgroundColor: checkColourSquares(squareID) }}
+              />
+            );
+            squareID++;
+          }
+        }
+      }
     }
-    return <div className="board">{rows}</div>;
+
+    return <div className="board-square-container">{boardElements}</div>;
   };
 
   return renderBoard();
