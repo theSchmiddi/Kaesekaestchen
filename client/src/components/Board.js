@@ -1,38 +1,97 @@
-import React from 'react';
-import './board.css';
+import React, { useState, useEffect } from "react";
+import Cell from "./Cell";
+import { socket, roomId } from "./StartScreen";
+import "./board.css";
 
 function Board() {
-  const rows = [];
-  for (let i = 0; i < 6; i++) {
+  const [board, setBoard] = useState(
+    Array.from({ length: 7 }, () =>
+      Array.from({ length: 7 }, () => ({
+        horizontal: false,
+        vertical: false,
+        owner: null,
+      }))
+    )
+  );
+  const [currentPlayer, setCurrentPlayer] = useState(1);
+
+  useEffect(() => {
+    socket.on("updateBoard", ({ newBoard, nextPlayer }) => {
+      setBoard(newBoard);
+      setCurrentPlayer(nextPlayer);
+    });
+  }, []);
+
+  const getNextPlayer = () => {
+    return currentPlayer === 1 ? 2 : 1;
+  };
+
+  const handleMakeMove = ({ row, col, edge }) => {
+    const newBoard = board.map((rowCells, rowIndex) =>
+      row === rowIndex
+        ? rowCells.map((cell, colIndex) =>
+            col === colIndex
+              ? { ...cell, [edge]: true, owner: currentPlayer }
+              : cell
+          )
+        : rowCells
+    );
+    socket.emit("makeMove", {
+      roomId,
+      newBoard,
+      nextPlayer: getNextPlayer(),
+    });
+  };
+
+  const renderCell = (row, col, edge) => {
+    const cell = board[row][col];
+    const owner = cell.owner;
+    const isDisabled = owner !== null;
+    const color = owner === 1 ? "red" : "blue";
+    const className = `board-cell-${edge}${
+      owner !== null ? ` board-cell-${color}` : ""
+    }${isDisabled ? " board-cell-disabled" : ""}`;
+    const handleClick = () => {
+      handleMakeMove({ row, col, edge });
+    };
+    return (
+      <Cell
+        key={`${row}-${col}-${edge}`}
+        className={className}
+        onClick={handleClick}
+      />
+    );
+  };
+
+  const renderRow = (row, rowIndex) => {
     const cells = [];
-    for (let j = 0; j < 6; j++) {
+    for (let colIndex = 0; colIndex < 6; colIndex++) {
       cells.push(
-        <React.Fragment key={`${i}-${j}`}>
-          <div className="board-cell-horizontal" onClick={() => console.log('waagerechte Kante geklickt')}></div>
-          <div className="board-cell-vertical" onClick={() => console.log('senkrechte Kante geklickt')}></div>
+        <React.Fragment key={`${rowIndex}-${colIndex}`}>
+          {renderCell(rowIndex, colIndex, "horizontal")}
+          {renderCell(rowIndex, colIndex, "vertical")}
         </React.Fragment>
       );
     }
-    cells.push(<div key={`${i}-6`} className="board-cell-horizontal" onClick={() => console.log('waagerechte Kante geklickt')}></div>);
-    rows.push(
-      <React.Fragment key={i}>
+    cells.push(renderCell(rowIndex, 6, "horizontal"));
+    return (
+      <React.Fragment key={rowIndex}>
         <div className="board-row">{cells}</div>
         <div className="board-row-spacer"></div>
       </React.Fragment>
     );
-  }
-  const cells = [];
-  for (let j = 0; j < 6; j++) {
-    cells.push(
-      <React.Fragment key={`6-${j}`}>
-        <div className="board-cell-horizontal" onClick={() => console.log('waagerechte Kante geklickt')}></div>
-        <div className="board-cell-vertical" onClick={() => console.log('senkrechte Kante geklickt')}></div>
-      </React.Fragment>
-    );
-  }
-  cells.push(<div key={`6-6`} className="board-cell-horizontal" onClick={() => console.log('waagerechte Kante geklickt')}></div>);
-  rows.push(<div key={6} className="board-row">{cells}</div>);
-  return <div className="board">{rows}</div>;
+  };
+
+  const renderBoard = () => {
+    const rows = [];
+    for (let rowIndex = 0; rowIndex < 6; rowIndex++) {
+      rows.push(renderRow(rowIndex, rowIndex));
+    }
+    rows.push(renderRow(6, 6));
+    return <div className="board">{rows}</div>;
+  };
+
+  return renderBoard();
 }
 
 export default Board;

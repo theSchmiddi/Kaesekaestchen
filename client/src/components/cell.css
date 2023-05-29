@@ -1,19 +1,4 @@
-.board {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 20px;
-  }
-  
-  .board-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .board-cell {
+.board-cell {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -60,17 +45,4 @@
   
   .board-cell-vertical + .board-cell-horizontal {
     margin-top: -10px;
-  }
-  
-  .board-cell-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-  
-  .board-cell-red {
-    background-color: red;
-  }
-  
-  .board-cell-blue {
-    background-color: blue;
   }

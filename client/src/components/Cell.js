@@ -1,8 +1,9 @@
 import React from 'react';
+import './cell.css';
 
-function Cell() {
+function Cell({ className, onClick }) {
   return (
-    <button className="board-cell" onClick={() => console.log('Zelle geklickt')}>
+    <button className={`board-cell ${className}`} onClick={onClick}>
       <div className="board-cell-inner"></div>
     </button>
   );
