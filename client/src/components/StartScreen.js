@@ -3,16 +3,32 @@ import io from "socket.io-client";
 
 const socket = io.connect("http://localhost:3001");
 
-function StartScreen() {
+function StartScreen({ onJoinGame }) {
   const [room, setRoom] = useState("");
   const [error, setError] = useState("");
 
-  const joinRoom = () => {
+  const handleJoinRoom = () => {
     if (room !== "") {
-      socket.emit("join_room", room);
+      socket.emit("join_room", room, (response) => {
+        if (response.error) {
+          setError(response.error);
+        } else {
+          onJoinGame(room, "Player 1");
+        }
+      });
     } else {
       setError("Please enter a room number.");
     }
+  };
+
+  const handleCreateRoom = () => {
+    socket.emit("join_room", "", (response) => {
+      if (response.error) {
+        setError(response.error);
+      } else {
+        onJoinGame(response.room, "Player 1");
+      }
+    });
   };
 
   socket.on("room_full", () => {
@@ -32,7 +48,8 @@ function StartScreen() {
           setRoom(event.target.value);
         }}
       />
-      <button onClick={joinRoom}>Join Room</button>
+      <button onClick={handleJoinRoom}>Join Room</button>
+      <button onClick={handleCreateRoom}>Create Room</button>
       {error && <p>{error}</p>}
     </div>
   );

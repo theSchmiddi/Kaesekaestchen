@@ -16,42 +16,48 @@ const io = new Server(server, {
 });
 
 const rooms = {};
+const users = {};
 
 io.on("connection", (socket) => {
-  console.log(`User Connected: ${socket.id}`);
+  const userId = socket.id;
+  users[userId] = { socket };
+
+  console.log(`User Connected: ${userId}`);
 
   socket.on("join_game", (data) => {
     const roomId = data.roomId;
     const player = data.player;
-    const game = games[roomId];
-    if (!game) {
+    if (!rooms[roomId]) {
       socket.emit("join_game_error", { error: "Game not found" });
+      console.log("Game not found")
       return;
     }
-    if (game.players.length >= 2) {
+    if (rooms[roomId].length >= 2) {
       socket.emit("join_game_error", { error: "Game is full" });
+      console.log("Game is full")
       return;
     }
-    game.players.push(player);
+    rooms[roomId].push(player);
     socket.join(roomId);
+    console.log("Game success")
     socket.emit("join_game_success", { roomId });
     io.to(roomId).emit("player_joined", { player });
   });
 
-  socket.on("join_room", (data) => {
-    const room = io.sockets.adapter.rooms.get(data);
+  socket.on("join_room", (roomId, callback) => {
+    const room = io.sockets.adapter.rooms.get(roomId);
 
     if (!room) {
-      socket.join(data);
-      rooms[data] = [socket.id];
-      socket.emit("room_joined", { room: data, players: 1 });
+      socket.join(roomId);
+      rooms[roomId] = [userId];
+      callback({ room: roomId, players: 1 });
     } else if (room.size === 1) {
-      socket.join(data);
-      rooms[data].push(socket.id);
-      socket.emit("room_joined", { room: data, players: 2 });
-      io.to(data).emit("start_game");
+      socket.join(roomId);
+      rooms[roomId].push(userId);
+      callback({ room: roomId, players: 2 });
+      io.to(roomId).emit("start_game");
     } else {
-      socket.emit("room_full");
+      callback({ error: "Room is full" });
     }
   });
 
@@ -60,11 +66,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log(`User Disconnected: ${socket.id}`);
+    console.log(`User Disconnected: ${userId}`);
+
+    delete users[userId];
 
     for (const room in rooms) {
-      if (rooms[room].includes(socket.id)) {
-        const index = rooms[room].indexOf(socket.id);
+      if (rooms[room].includes(userId)) {
+        const index = rooms[room].indexOf(userId);
         rooms[room].splice(index, 1);
         io.to(room).emit("player_left");
       }
