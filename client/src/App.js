@@ -33,7 +33,8 @@ function App() {
         console.log(data.error);
       } else {
         setPlayer(playerName);
-        setRoomId(roomId);
+        setRoomId(data.roomId);
+        window.location.href = `/game/${data.roomId}`;
       }
     });
   };
