@@ -13,7 +13,7 @@ function StartScreen({ onJoinGame }) {
         if (response.error) {
           setError(response.error);
         } else {
-          onJoinGame(room, "Player 1");
+          onJoinGame(room, "Player 2");
         }
       });
     } else {
@@ -22,11 +22,11 @@ function StartScreen({ onJoinGame }) {
   };
 
   const handleCreateRoom = () => {
-    socket.emit("join_room", "", (response) => {
+    socket.emit("create_room", (response) => {
       if (response.error) {
         setError(response.error);
       } else {
-        onJoinGame(response.room, "Player 1");
+        onJoinGame(response.roomId, "Player 1");
       }
     });
   };

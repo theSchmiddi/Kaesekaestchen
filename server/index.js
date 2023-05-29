@@ -24,40 +24,29 @@ io.on("connection", (socket) => {
 
   console.log(`User Connected: ${userId}`);
 
-  socket.on("join_game", (data) => {
-    const roomId = data.roomId;
-    const player = data.player;
-    if (!rooms[roomId]) {
-      socket.emit("join_game_error", { error: "Game not found" });
-      console.log("Game not found")
-      return;
+  socket.on("create_room", (callback) => {
+    let roomId = Math.floor(Math.random() * 1000);
+    while (rooms[roomId]) {
+      roomId = Math.floor(Math.random() * 1000);
     }
-    if (rooms[roomId].length >= 2) {
-      socket.emit("join_game_error", { error: "Game is full" });
-      console.log("Game is full")
-      return;
-    }
-    rooms[roomId].push(player);
     socket.join(roomId);
-    console.log("Game success")
-    socket.emit("join_game_success", { roomId });
-    io.to(roomId).emit("player_joined", { player });
+    rooms[roomId] = [userId];
+    callback({ roomId });
   });
 
   socket.on("join_room", (roomId, callback) => {
     const room = io.sockets.adapter.rooms.get(roomId);
 
     if (!room) {
-      socket.join(roomId);
-      rooms[roomId] = [userId];
-      callback({ room: roomId, players: 1 });
+      callback({ error: "Room not found" });
     } else if (room.size === 1) {
       socket.join(roomId);
       rooms[roomId].push(userId);
-      callback({ room: roomId, players: 2 });
+      callback({});
       io.to(roomId).emit("start_game");
-    } else {
-      callback({ error: "Room is full" });
+    } else if (room.size === 2) {
+      callback({});
+      io.to(roomId).emit("room_full");
     }
   });
 
