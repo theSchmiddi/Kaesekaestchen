@@ -1,17 +1,24 @@
 import React, { useState } from 'react';
-import io from 'socket.io-client';
+import { io } from 'socket.io-client';
 
-export const socket = io('http://localhost:5000');
+const socket = io('http://localhost:5000');
+let roomId = null;
 
 function StartScreen() {
-  const [roomId, setRoomId] = useState('');
+  const [inputValue, setInputValue] = useState('');
 
   const handleCreateRoom = () => {
-    socket.emit('createRoom', roomId);
+    if (inputValue !== '') {
+      roomId = inputValue;
+      socket.emit('createRoom', roomId);
+    }
   };
 
   const handleJoinRoom = () => {
-    socket.emit('joinRoom', roomId);
+    if (inputValue !== '') {
+      roomId = inputValue;
+      socket.emit('joinRoom', roomId);
+    }
   };
 
   return (
@@ -27,8 +34,8 @@ function StartScreen() {
                   type="text"
                   className="form-control"
                   id="roomId"
-                  value={roomId}
-                  onChange={(e) => setRoomId(e.target.value)}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
                 />
               </div>
               <button className="btn btn-primary mr-2" onClick={handleCreateRoom}>
@@ -46,3 +53,4 @@ function StartScreen() {
 }
 
 export default StartScreen;
+export { socket, roomId };

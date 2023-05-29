@@ -1,72 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import Board from './Board';
+import { socket, roomId } from './StartScreen';
 
 function GameBoard() {
-  const [board, setBoard] = useState(Array(9).fill(null));
-  const [xIsNext, setXIsNext] = useState(true);
+  const [gameInfo, setGameInfo] = useState({
+    player: null,
+    turn: false,
+    score: 0,
+  });
 
-  const handleClick = (index) => {
-    const squares = [...board];
-    if (calculateWinner(squares) || squares[index]) {
-      return;
-    }
-    squares[index] = xIsNext ? "X" : "O";
-    setBoard(squares);
-    setXIsNext(!xIsNext);
-  };
+  useEffect(() => {
+    // Spielinformationen vom Server abrufen
+    console.log('roomId:', roomId);
+    socket.emit('getGameInfo', roomId);
 
-  const renderSquare = (index) => {
-    return (
-      <button className="square" onClick={() => handleClick(index)}>
-        {board[index]}
-      </button>
-    );
-  };
-
-  const winner = calculateWinner(board);
-  const status = winner
-    ? `Winner: ${winner}`
-    : `Next player: ${xIsNext ? "X" : "O"}`;
+    // Socket.io-Event-Handler registrieren, um die Spielinformationen zu aktualisieren
+    socket.on('gameInfo', (info) => {
+      setGameInfo(info);
+    });
+  }, []);
 
   return (
     <div>
-      <div className="status">{status}</div>
-      <div className="board-row">
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
+      <div className="game-info">
+        <p>Spielstand: {gameInfo.score}</p>
+        <p>Du bist Spieler {gameInfo.player} (rot)</p>
+        <p>{gameInfo.turn ? 'Du bist an der Reihe' : 'Spieler 2 ist an der Reihe'}</p>
       </div>
-      <div className="board-row">
-        {renderSquare(3)}
-        {renderSquare(4)}
-        {renderSquare(5)}
+      <div className="game-board">
+        <Board />
       </div>
-      <div className="board-row">
-        {renderSquare(6)}
-        {renderSquare(7)}
-        {renderSquare(8)}
+      <div className="game-controls">
+        <button onClick={() => console.log('Spiel reseten')}>Reset</button>
       </div>
     </div>
   );
-}
-
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-  return null;
 }
 
 export default GameBoard;

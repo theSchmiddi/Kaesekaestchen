@@ -48,6 +48,26 @@ io.on('connection', (socket) => {
       }
     });
   });
+
+  socket.on('getGameInfo', (roomId) => {
+    const room = rooms.get(roomId);
+    if (room) {
+      const player1 = Array.from(room)[0];
+      const player2 = Array.from(room)[1];
+      io.to(player1).emit('gameInfo', {
+        player: 1,
+        turn: true,
+        score: 0,
+      });
+      io.to(player2).emit('gameInfo', {
+        player: 2,
+        turn: false,
+        score: 0,
+      });
+    } else {
+      console.log(`Raum ${roomId} nicht gefunden`);
+    }
+  });
 });
 
 http.listen(5000, () => {
