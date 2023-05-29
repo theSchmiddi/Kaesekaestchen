@@ -56,11 +56,13 @@ io.on('connection', (socket) => {
       const player2 = Array.from(room)[1];
       io.to(player1).emit('gameInfo', {
         player: 1,
+        color: 'Rot',
         turn: true,
         score: 0,
       });
       io.to(player2).emit('gameInfo', {
         player: 2,
+        color: 'Blau',
         turn: false,
         score: 0,
       });
