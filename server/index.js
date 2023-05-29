@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("makeMove", ({ roomId, player, edgesID, squareID }) => {
+  socket.on("makeMove", ({ roomId, player, edgesID }) => {
     const game = gameData.get(roomId);
     if (game) {
       const { squares, edges, player1, player2 } = game;
@@ -93,6 +93,7 @@ io.on("connection", (socket) => {
         console.log("Nicht am Zug");
         return;
       }
+      console.log(edges[edgesID] !== 0)
       if (edges[edgesID] !== 0) {
         console.log("Kante bereits gesetzt");
         return;

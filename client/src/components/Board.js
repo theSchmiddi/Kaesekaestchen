@@ -12,18 +12,20 @@ function Board() {
       setSquares(squares);
       setEdges(edges);
       setCurrentPlayer(nextPlayer);
+      console.log(edges);
+      renderBoard();
     });
     socket.on("gameOver", (winner) => {
       alert(`Spieler ${winner} hat gewonnen!`);
     });
   }, []);
 
-  const handleMakeMove = (edgesID, squareID) => {
+  const handleMakeMove = (event) => {
+    const edgesID = parseInt(event.target.id);
     socket.emit("makeMove", {
       roomId: roomId,
       player: socket.id,
       edgesID,
-      squareID,
     });
   };
 
@@ -57,8 +59,9 @@ function Board() {
             <button
               key={`edge-horizontal-${edgesID}`}
               className="board-edge-horizontal"
-              onClick={() => handleMakeMove(edgesID, squareID)}
+              onClick={handleMakeMove}
               style={{ backgroundColor: checkColourEdges(edgesID) }}
+              id={edgesID}
             />
           );
           edgesID++;
@@ -66,13 +69,13 @@ function Board() {
       } else {
         for (let j = 0; j < 9; j++) {
           if (j % 2 === 0) {
-            console.log((edges[edgesID] !== 0)+ " : " + edges[edgesID])
             boardElements.push(
               <button
                 key={`edge-vertical-${edgesID}`}
                 className="board-edge-vertical"
-                onClick={() => handleMakeMove(edgesID, squareID)}
+                onClick={handleMakeMove}
                 style={{ backgroundColor: checkColourEdges(edgesID) }}
+                id={edgesID}
               />
             );
             edgesID++;
