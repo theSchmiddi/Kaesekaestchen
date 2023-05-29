@@ -1,53 +1,33 @@
 import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
-import StartScreen from "./components/StartScreen";
-import GameBoard from "./components/GameBoard";
-import PlayerInfo from "./components/PlayerInfo";
-
-const socket = io.connect("http://localhost:3001");
+import StartScreen, { socket } from "./components/StartScreen";
+import Gameboard from "./components/GameBoard";
 
 function App() {
-  const [player, setPlayer] = useState("");
-  const [roomId, setRoomId] = useState("");
-  const [score, setScore] = useState(0);
-  const [isMyTurn, setIsMyTurn] = useState(false);
+  const [inRoom, setInRoom] = useState(false);
 
   useEffect(() => {
-    socket.on("join_game_success", (data) => {
-      console.log("roomId:", data.roomId);
-      setRoomId(data.roomId);
+    // Socket.io-Event-Handler registrieren, um zu überprüfen, ob der Benutzer in einem Raum ist
+    socket.on("roomJoined", () => {
+      setInRoom(true);
     });
-    
-    socket.on("player_joined", (data) => {
-      setPlayer(data.player);
+    socket.on("roomCreated", () => {
+      setInRoom(true);
     });
-
-    socket.on("game_started", (data) => {
-      setIsMyTurn(data.isMyTurn);
+    socket.on("playerDisconnected", () => {
+      setInRoom(false);
     });
-  }, [socket]);
-
-  const handleJoinGame = (roomId, playerName) => {
-    socket.emit("join_room", roomId, (data) => {
-      if (data.error) {
-        console.log(data.error);
-      } else {
-        setPlayer(playerName);
-        setRoomId(data.roomId);
-        window.location.href = `/game/${data.roomId}`;
-      }
-    });
-  };
+  }, []);
 
   return (
     <div className="App">
-      {roomId ? (
-        <>
-          <PlayerInfo player={player} score={score} isMyTurn={isMyTurn} />
-          <GameBoard roomId={roomId} socket={socket} />
-        </>
+      {inRoom ? (
+        <Gameboard />
       ) : (
-        <StartScreen onJoinGame={handleJoinGame} />
+        <div>
+          <h1>Käsekästchen</h1>
+          <p>Spielregeln: ...</p>
+          <StartScreen />
+        </div>
       )}
     </div>
   );

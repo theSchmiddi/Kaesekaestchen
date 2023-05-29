@@ -1,75 +1,55 @@
-const express = require("express");
-const app = express();
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-
-app.use(cors());
-
-const server = http.createServer(app);
-
-const io = new Server(server, {
+const app = require('express')();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
+    origin: '*',
   },
 });
 
-const rooms = {};
+const rooms = new Map();
 
-io.on("connection", (socket) => {
-    const userId = socket.id;
-  
-    console.log(`User Connected: ${userId}`);
-  
-    socket.on("create_room", (roomId, callback) => {
-      if (rooms[roomId]) {
-        callback({ error: "Room already exists" });
+io.on('connection', (socket) => {
+  console.log('a user connected');
+
+  socket.on('createRoom', (roomId) => {
+    if (!rooms.has(roomId)) {
+      rooms.set(roomId, new Set([socket.id]));
+      socket.join(roomId);
+      console.log(`Room ${roomId} created`);
+      socket.emit('roomCreated', roomId);
+    } else {
+      socket.emit('roomExists', roomId);
+    }
+  });
+
+  socket.on('joinRoom', (roomId) => {
+    if (rooms.has(roomId)) {
+      const room = rooms.get(roomId);
+      if (room.size < 2) {
+        room.add(socket.id);
+        socket.join(roomId);
+        console.log(`User ${socket.id} joined room ${roomId}`);
+        socket.emit('roomJoined', roomId);
+        io.to(roomId).emit('startGame');
       } else {
-        socket.join(roomId);
-        rooms[roomId] = { users: [userId] };
-        callback({ roomId });
+        socket.emit('roomFull', roomId);
       }
-    });
-  
-    socket.on("join_room", (roomId, callback) => {
-      const room = rooms[roomId];
-  
-      if (!room) {
-        callback({ error: "Room not found" });
-      } else if (room.users.length === 1) {
-        socket.join(roomId);
-        room.users.push(userId);
-        callback({ roomId });
-        io.to(roomId).emit("player_joined", { player: "Player 2" });
-        io.to(roomId).emit("game_started", { isMyTurn: true });
-      } else if (room.users.length === 2) {
-        callback({});
-        io.to(roomId).emit("room_full");
-      }
-    });
-  
-    socket.on("send_move", (data) => {
-      socket.to(data.room).emit("receive_move", data);
-    });
-  
-    socket.on("disconnect", () => {
-      console.log(`User Disconnected: ${userId}`);
-  
-      for (const roomId in rooms) {
-        const room = rooms[roomId];
-        const index = room.users.indexOf(userId);
-        if (index !== -1) {
-          room.users.splice(index, 1);
-          io.to(roomId).emit("player_left");
-          if (room.users.length === 0) {
-            delete rooms[roomId];
-          }
-        }
+    } else {
+      socket.emit('roomNotFound', roomId);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+    rooms.forEach((room, roomId) => {
+      if (room.has(socket.id)) {
+        room.delete(socket.id);
+        io.to(roomId).emit('playerDisconnected');
       }
     });
   });
+});
 
-server.listen(3001, () => {
-  console.log("Server is running.");
+http.listen(5000, () => {
+  console.log('listening on *:5000');
 });

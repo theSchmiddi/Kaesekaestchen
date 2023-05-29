@@ -1,60 +1,46 @@
-import React, { useState } from "react";
-import io from "socket.io-client";
+import React, { useState } from 'react';
+import io from 'socket.io-client';
 
-const socket = io.connect("http://localhost:3001");
+export const socket = io('http://localhost:5000');
 
-function StartScreen({ onJoinGame }) {
-  const [room, setRoom] = useState("");
-  const [error, setError] = useState("");
-
-  const handleJoinRoom = () => {
-    if (room !== "") {
-      socket.emit("join_room", room, (response) => {
-        if (response.error) {
-          setError(response.error);
-        } else {
-          onJoinGame(room, "Player 2");
-        }
-      });
-    } else {
-      setError("Please enter a room number.");
-    }
-  };
+function StartScreen() {
+  const [roomId, setRoomId] = useState('');
 
   const handleCreateRoom = () => {
-    if (room !== "") {
-      socket.emit("create_room", room, (response) => {
-        if (response.error) {
-          setError(response.error);
-        } else {
-          onJoinGame(room, "Player 1");
-        }
-      });
-    } else {
-      setError("Please enter a room number.");
-    }
+    socket.emit('createRoom', roomId);
   };
 
-  socket.on("room_full", () => {
-    setError("Room is full!");
-  });
-
-  socket.on("room_joined", (data) => {
-    window.location.href = `/game/${data.room}`;
-  });
+  const handleJoinRoom = () => {
+    socket.emit('joinRoom', roomId);
+  };
 
   return (
-    <div>
-      <h1>Käsekästchen</h1>
-      <input
-        placeholder="Room Number..."
-        onChange={(event) => {
-          setRoom(event.target.value);
-        }}
-      />
-      <button onClick={handleJoinRoom}>Join Room</button>
-      <button onClick={handleCreateRoom}>Create Room</button>
-      {error && <p>{error}</p>}
+    <div className="container">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <h5 className="card-title">Raum beitreten oder erstellen</h5>
+              <div className="form-group">
+                <label htmlFor="roomId">Raum-ID:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="roomId"
+                  value={roomId}
+                  onChange={(e) => setRoomId(e.target.value)}
+                />
+              </div>
+              <button className="btn btn-primary mr-2" onClick={handleCreateRoom}>
+                Raum erstellen
+              </button>
+              <button className="btn btn-primary" onClick={handleJoinRoom}>
+                Raum beitreten
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
