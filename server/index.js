@@ -20,6 +20,24 @@ const rooms = {};
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
+  socket.on("join_game", (data) => {
+    const roomId = data.roomId;
+    const player = data.player;
+    const game = games[roomId];
+    if (!game) {
+      socket.emit("join_game_error", { error: "Game not found" });
+      return;
+    }
+    if (game.players.length >= 2) {
+      socket.emit("join_game_error", { error: "Game is full" });
+      return;
+    }
+    game.players.push(player);
+    socket.join(roomId);
+    socket.emit("join_game_success", { roomId });
+    io.to(roomId).emit("player_joined", { player });
+  });
+
   socket.on("join_room", (data) => {
     const room = io.sockets.adapter.rooms.get(data);
 
