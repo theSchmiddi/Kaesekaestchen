@@ -42,3 +42,8 @@ Die Regeln beim Spiel mit Stift und Kariertempapier lauten:
 10. Öffne auf Geräten, die sich im selben Netzwerk wie der Server befinden, einen Browser und rufe die Anwendung unter `http://+yourIP+:3000` auf. Beispiel: `http://192.168.0.100:3000`.
 
 Bitte beachte, dass die IP-Adresse des Servers je nach Netzwerkkonfiguration unterschiedlich sein kann. Stelle sicher, dass du die richtige IP-Adresse verwendest.
+
+
+## Anmerkung
+
+Ich habe die Zeit unterschätzt die allein für die Entwicklung der Graphischen Oberfläche von Kaesekaestchen drauf gind, weswegen ich die geschätzen 13 eher 20+ wurden.
