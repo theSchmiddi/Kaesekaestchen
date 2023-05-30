@@ -28,7 +28,7 @@ io.on("connection", (socket) => {
       console.log(`Room ${roomId} created`);
       socket.emit("roomCreated", roomId);
     } else {
-      socket.emit("roomExists", roomId);
+      socket.emit("roomExists", `Der Raum ${roomId} wurde bereits erstellt.`);
     }
   });
 
@@ -46,10 +46,16 @@ io.on("connection", (socket) => {
         socket.emit("roomJoined", roomId);
         io.to(roomId).emit("startGame");
       } else {
-        socket.emit("roomFull", roomId);
+        socket.emit(
+          "roomFull",
+          `Es befinden sich bereits 2 Spieler im Raum ${roomId}.`
+        );
       }
     } else {
-      socket.emit("roomNotFound", roomId);
+      socket.emit(
+        "roomNotFound",
+        `Der Raum ${roomId} gibt es bisher noch nicht.`
+      );
     }
   });
 
@@ -87,10 +93,18 @@ io.on("connection", (socket) => {
       const { squares, edges, player1, player2, scoring } = game;
       const currentPlayer = player === player1 ? 1 : 2;
       if (currentPlayer !== game.currentPlayer) {
+        socket.emit(
+          "notYourTurn",
+          `Sie sind nicht am Zug.`
+        );
         console.log("Nicht am Zug");
         return;
       }
       if (edges[edgesID] !== 0) {
+        socket.emit(
+          "edgeForgiven",
+          `Die Kante wurde bereits von einem Spieler ausgewählt.`
+        );
         console.log("Kante bereits gesetzt");
         return;
       }

@@ -1,12 +1,27 @@
 import React, { useState } from 'react';
 import { io } from 'socket.io-client';
 import config from '../config';
+import { useEffect } from 'react';
 
 const socket = io(config.serverUrl);
 let roomId = null;
 
 function StartScreen() {
   const [inputValue, setInputValue] = useState('');
+
+
+  useEffect(() => {
+
+    socket.on('roomFull', (alertText) => {
+      alert(alertText);
+    });
+    socket.on('roomNotFound', (alertText) => {
+      alert(alertText);
+    });
+    socket.on('roomExists', (alertText) => {
+      alert(alertText);
+    });
+  }, []);
 
   const handleCreateRoom = () => {
     if (inputValue !== '') {
