@@ -67,16 +67,14 @@ io.on("connection", (socket) => {
     if (room) {
       const player1 = Array.from(room)[0];
       const player2 = Array.from(room)[1];
-      io.to(player1).emit("gameInfo", {
+      io.to(player1).emit("playerInfo", {
         player: 1,
         color: "Rot",
-        turn: true,
         score: 0,
       });
-      io.to(player2).emit("gameInfo", {
+      io.to(player2).emit("playerInfo", {
         player: 2,
         color: "Blau",
-        turn: false,
         score: 0,
       });
     } else {
@@ -118,12 +116,32 @@ io.on("connection", (socket) => {
       if (score === 0) {
         game.currentPlayer = currentPlayer === 1 ? 2 : 1;
       }
-      io.to(roomId).emit("updateBoard", { squares, edges, nextPlayer: game.currentPlayer });
+      if (game.currentPlayer === 2) {
+        io.to(roomId).emit("gameInfo", {
+          player: 2,
+          color: "Blau",
+          score: 0,
+        });
+      } else {
+        io.to(roomId).emit("gameInfo", {
+          player: 1,
+          color: "Rot",
+          score: 0,
+        });
+      }
+      io.to(roomId).emit("updateBoard", {
+        squares,
+        edges,
+        nextPlayer: game.currentPlayer,
+      });
       if (score === 0 && edges.every((edge) => edge)) {
-        const winner = squares.reduce((acc, square) => {
-          acc[square - 1]++;
-          return acc;
-        }, [0, 0]);
+        const winner = squares.reduce(
+          (acc, square) => {
+            acc[square - 1]++;
+            return acc;
+          },
+          [0, 0]
+        );
         if (winner[0] > winner[1]) {
           io.to(roomId).emit("gameOver", 1);
         } else if (winner[1] > winner[0]) {

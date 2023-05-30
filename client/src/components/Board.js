@@ -12,7 +12,6 @@ function Board() {
       setSquares(squares);
       setEdges(edges);
       setCurrentPlayer(nextPlayer);
-      console.log(edges);
       renderBoard();
     });
     socket.on("gameOver", (winner) => {

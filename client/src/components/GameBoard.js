@@ -6,15 +6,21 @@ function GameBoard() {
   const [gameInfo, setGameInfo] = useState({
     player: null,
     color: null, 
-    turn: false,
+    score: 0,
+  });
+  const [playerInfo, setPlayerInfo] = useState({
+    player: null,
+    color: null, 
     score: 0,
   });
   const [startGame, setStartGame] = useState(false);
 
   useEffect(() => {
-    console.log('roomId:', roomId);
     socket.emit('getGameInfo', roomId);
 
+    socket.on('playerInfo', (info) => {
+      setPlayerInfo(info);
+    });
     socket.on('gameInfo', (info) => {
       setGameInfo(info);
     });
@@ -24,12 +30,19 @@ function GameBoard() {
     });
   }, []);
 
+  const checkTurn = () => {
+    if(gameInfo.player === null && playerInfo.player ===1 || gameInfo.player === playerInfo.player){
+      return 'Du bist an der Reihe';
+    } 
+    return 'Der andere Spieler ist an der Reihe';
+  }
+
   return (
     <div>
       <div className="game-info">
         <p>Spielstand: {gameInfo.score}</p>
-        <p>Du bist Spieler {gameInfo.player} ({gameInfo.color})</p> 
-        <p>{gameInfo.turn ? 'Du bist an der Reihe' : 'Der andere Spieler ist an der Reihe'}</p>
+        <p>Du bist Spieler {playerInfo.player} ({playerInfo.color})</p> 
+        <p>{checkTurn()}</p>
       </div>
       <div className="game-board">
         {startGame?<Board />:<></>}
