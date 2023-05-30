@@ -20,29 +20,6 @@ Die Regeln beim Spiel mit Stift und Kariertempapier lauten:
 - Spieler 1 ist immer rot und Spieler 2 immer Blau
 
 
-## Starten der Anwendung
-
-Anforderungen:
-- node
-- npm oder yarn
-- git
-- Texteditor oder IDE
-
-Schritt für Schritt Anleitung zum Starten der Anwendung:
-
-1. Lade das Projekt von GitHub herunter:
-    git clone https://github.com/theSchmiddi/Kaesekaestchen.git
-2. Öffne ein Terminal und navigiere in den Projekt Ordner
-3. navigiere dich in den Server Ordner mit
-    cd server
-4. Führe npm i aus
-5. Starte den Server mit npm start oder yarn start
-6. Öffne die Datei client/src/config.js
-7. ändere yourIP zu der IP Adresse des Rechners, wo der Server läuft
-8. Öffne ein weiteres Terminal und navigiere dich in den Kaesekaestchen/client Ordner
-9. Starte den Client mit npm start oder yarn satrt
-10. Nun kannst du auf Geräten die im selben Netzwerk sind wie dein Rechner, wo der Server läuft den Brwoser öffnen und unter 'http://+yourIP+:3000' Bsp.: 'http://192.168.0.100:3000' die Anwendung aufrufen und Kaesekaestchen spielen.
-
 ## Anforderungen
 - Node.js
 - npm oder yarn
