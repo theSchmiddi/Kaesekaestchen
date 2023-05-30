@@ -10,6 +10,7 @@ const rooms = new Map();
 
 const gameData = new Map();
 
+
 io.on("connection", (socket) => {
   console.log("a user connected");
 
@@ -22,6 +23,7 @@ io.on("connection", (socket) => {
         squares: Array.from({ length: 16 }, () => 0),
         edges: Array.from({ length: 40 }, () => 0),
         currentPlayer: 1,
+        scoring: [0,0],
       });
       socket.join(roomId);
       console.log(`Room ${roomId} created`);
@@ -70,12 +72,10 @@ io.on("connection", (socket) => {
       io.to(player1).emit("playerInfo", {
         player: 1,
         color: "Rot",
-        score: 0,
       });
       io.to(player2).emit("playerInfo", {
         player: 2,
         color: "Blau",
-        score: 0,
       });
     } else {
       console.log(`Raum ${roomId} nicht gefunden`);
@@ -85,7 +85,7 @@ io.on("connection", (socket) => {
   socket.on("makeMove", ({ roomId, player, edgesID }) => {
     const game = gameData.get(roomId);
     if (game) {
-      const { squares, edges, player1, player2 } = game;
+      const { squares, edges, player1, player2, scoring } = game;
       const currentPlayer = player === player1 ? 1 : 2;
       if (currentPlayer !== game.currentPlayer) {
         console.log("Nicht am Zug");
@@ -110,24 +110,26 @@ io.on("connection", (socket) => {
             score++;
             squares[squareID] = currentPlayer;
             game.currentPlayer = currentPlayer;
+            console.log(scoring[currentPlayer-1])
+            scoring[currentPlayer-1]++;
           }
         }
       }
-      if (score === 0) {
-        game.currentPlayer = currentPlayer === 1 ? 2 : 1;
-      }
-      if (game.currentPlayer === 2) {
+      if (currentPlayer === 2) {
         io.to(roomId).emit("gameInfo", {
           player: 2,
           color: "Blau",
-          score: 0,
+          scores: scoring,
         });
       } else {
         io.to(roomId).emit("gameInfo", {
           player: 1,
           color: "Rot",
-          score: 0,
+          scores: scoring,
         });
+      }
+      if (score === 0) {
+        game.currentPlayer = currentPlayer === 1 ? 2 : 1;
       }
       io.to(roomId).emit("updateBoard", {
         squares,
@@ -169,7 +171,7 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("gameInfo", {
         player: 1,
         color: "Rot",
-        score: 0,
+        scores: [0, 0],
       });
     } else {
       console.log(`Raum ${roomId} nicht gefunden`);

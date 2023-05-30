@@ -6,12 +6,11 @@ function GameBoard() {
   const [gameInfo, setGameInfo] = useState({
     player: null,
     color: null, 
-    score: 0,
+    scores: [0, 0],
   });
   const [playerInfo, setPlayerInfo] = useState({
     player: null,
     color: null, 
-    score: 0,
   });
   const [startGame, setStartGame] = useState(false);
 
@@ -44,7 +43,7 @@ function GameBoard() {
   return (
     <div>
       <div className="game-info">
-        <p>Spielstand: {gameInfo.score}</p>
+        <p>Spielstand: Player1: {gameInfo.scores[0]} - Player2: {gameInfo.scores[1]}</p>
         <p>Du bist Spieler {playerInfo.player} ({playerInfo.color})</p> 
         <p>{checkTurn()}</p>
       </div>
