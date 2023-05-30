@@ -10,7 +10,6 @@ const rooms = new Map();
 
 const gameData = new Map();
 
-
 io.on("connection", (socket) => {
   console.log("a user connected");
 
@@ -23,7 +22,7 @@ io.on("connection", (socket) => {
         squares: Array.from({ length: 16 }, () => 0),
         edges: Array.from({ length: 40 }, () => 0),
         currentPlayer: 1,
-        scoring: [0,0],
+        scoring: [0, 0],
       });
       socket.join(roomId);
       console.log(`Room ${roomId} created`);
@@ -110,7 +109,7 @@ io.on("connection", (socket) => {
             score++;
             squares[squareID] = currentPlayer;
             game.currentPlayer = currentPlayer;
-            scoring[currentPlayer-1]++;
+            scoring[currentPlayer - 1]++;
           }
         }
       }
@@ -129,6 +128,7 @@ io.on("connection", (socket) => {
       }
       if (score === 0) {
         game.currentPlayer = currentPlayer === 1 ? 2 : 1;
+        io.to(roomId).emit("changePlayer", game.currentPlayer);
       }
       io.to(roomId).emit("updateBoard", {
         squares,

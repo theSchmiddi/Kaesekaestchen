@@ -13,6 +13,7 @@ function GameBoard() {
     color: null, 
   });
   const [startGame, setStartGame] = useState(false);
+  const [currentPlayer, setCurrentPlayer] = useState(1);
 
   useEffect(() => {
     socket.emit('getGameInfo', roomId);
@@ -23,18 +24,14 @@ function GameBoard() {
     socket.on('gameInfo', (info) => {
       setGameInfo(info);
     });
+    socket.on('changePlayer', (info) => {
+      setCurrentPlayer(info);
+    });
 
     socket.on('startGame', () => {
       setStartGame(true);
     });
   }, []);
-
-  const checkTurn = () => {
-    if((gameInfo.player === null && playerInfo.player ===1) || gameInfo.player === playerInfo.player){
-      return 'Du bist an der Reihe';
-    } 
-    return 'Der andere Spieler ist an der Reihe';
-  }
 
   const handleReset = () => {
     socket.emit("resetBoard", roomId);
@@ -45,7 +42,7 @@ function GameBoard() {
       <div className="game-info">
         <p>Spielstand: Player1: {gameInfo.scores[0]} - Player2: {gameInfo.scores[1]}</p>
         <p>Du bist Spieler {playerInfo.player} ({playerInfo.color})</p> 
-        <p>{checkTurn()}</p>
+        <p>Player {currentPlayer} ist am Zug.</p>
       </div>
       <div className="game-board" style={{paddingLeft: '15%', paddingRight: '15%'}}>
         {startGame?<Board />:<></>}

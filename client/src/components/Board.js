@@ -10,7 +10,6 @@ function Board() {
     socket.on("updateBoard", ({ squares, edges }) => {
       setSquares(squares);
       setEdges(edges);
-      renderBoard();
     });
     socket.on("gameOver", (winner) => {
       alert(`Spieler ${winner} hat gewonnen!`);
@@ -44,11 +43,21 @@ function Board() {
     return "grey";
   };
 
-  const renderBoard = () => {
+  return (
+    <div className="board-square-container">
+      {renderBoard().map((rowButtons, i) => (
+        <div key={`row-buttons-${i}`} className={`row-buttons-${i}`}>
+          {rowButtons}
+        </div>
+      ))}
+    </div>
+  );
+
+  function renderBoard() {
     let edgesID = 0;
     let squareID = 0;
     const boardElements = [];
-  
+
     for (let i = 0; i < 9; i++) {
       const rowButtons = [];
       if (i % 2 === 0) {
@@ -91,19 +100,9 @@ function Board() {
       }
       boardElements.push(rowButtons);
     }
-  
-    return (
-      <div className="board-square-container">
-        {boardElements.map((rowButtons, i) => (
-          <div key={`row-buttons-${i}`} className={`row-buttons-${i}`}>
-            {rowButtons}
-          </div>
-        ))}
-      </div>
-    );
-  };
 
-  return renderBoard();
+    return boardElements;
+  }
 }
 
 export default Board;
