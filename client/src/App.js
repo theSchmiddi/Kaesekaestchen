@@ -25,7 +25,16 @@ function App() {
       ) : (
         <div>
           <h1>Käsekästchen</h1>
-          <p>Spielregeln: ...</p>
+          <p>Spielregeln:</p>{" "}
+          <p>
+            Es geht darum, möglichst viele Kästchen zu erobern. Ein Kästchen
+            wird erobert, wenn die vierte Wand (Seitenkante) platziert wird. In
+            jedem Zug kannst du eine Wand setzen. Wenn du ein Kästchen erobert
+            hast, musst du gleich noch einen Zug machen - und kannst so
+            vielleicht gleich ein weiteres Kästchen bekommen. Wenn alle Wände
+            gesetzt sind, ist das Spiel zu Ende. Derjenige, der am meisten
+            Kästchen erobert hat, ist der Gewinner des Spiels.
+          </p>
           <StartScreen />
         </div>
       )}
