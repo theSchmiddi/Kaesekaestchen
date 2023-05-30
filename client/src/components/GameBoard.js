@@ -37,6 +37,10 @@ function GameBoard() {
     return 'Der andere Spieler ist an der Reihe';
   }
 
+  const handleReset = () => {
+    socket.emit("resetBoard", roomId);
+  };
+
   return (
     <div>
       <div className="game-info">
@@ -48,7 +52,7 @@ function GameBoard() {
         {startGame?<Board />:<></>}
       </div>
       <div className="game-controls">
-        <button onClick={() => console.log('Spiel reseten')}>Reset</button>
+        <button onClick={handleReset}>Reset</button>
       </div>
     </div>
   );

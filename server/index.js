@@ -154,6 +154,27 @@ io.on("connection", (socket) => {
       console.log(`Raum ${roomId} nicht gefunden`);
     }
   });
+
+  socket.on("resetBoard", (roomId) => {
+    const game = gameData.get(roomId);
+    if (game) {
+      game.squares = Array.from({ length: 16 }, () => 0);
+      game.edges = Array.from({ length: 40 }, () => 0);
+      game.currentPlayer = 1;
+      io.to(roomId).emit("updateBoard", {
+        squares: game.squares,
+        edges: game.edges,
+        nextPlayer: game.currentPlayer,
+      });
+      io.to(roomId).emit("gameInfo", {
+        player: 1,
+        color: "Rot",
+        score: 0,
+      });
+    } else {
+      console.log(`Raum ${roomId} nicht gefunden`);
+    }
+  });
 });
 
 http.listen(5000, () => {
