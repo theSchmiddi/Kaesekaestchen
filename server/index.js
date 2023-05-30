@@ -134,7 +134,9 @@ io.on("connection", (socket) => {
         edges,
         nextPlayer: game.currentPlayer,
       });
-      if (score === 0 && edges.every((edge) => edge)) {
+      console.log(edges)
+      if (!squares.includes(0)) {
+        console.log("Fertig")
         const winner = squares.reduce(
           (acc, square) => {
             acc[square - 1]++;
