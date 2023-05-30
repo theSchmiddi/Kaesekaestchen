@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { io } from 'socket.io-client';
+import config from '../config';
 
-const socket = io('http://localhost:5000');
+const socket = io(config.serverUrl);
 let roomId = null;
 
 function StartScreen() {

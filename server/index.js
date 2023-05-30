@@ -110,7 +110,6 @@ io.on("connection", (socket) => {
             score++;
             squares[squareID] = currentPlayer;
             game.currentPlayer = currentPlayer;
-            console.log(scoring[currentPlayer-1])
             scoring[currentPlayer-1]++;
           }
         }
