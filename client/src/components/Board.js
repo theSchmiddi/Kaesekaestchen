@@ -50,11 +50,12 @@ function Board() {
     let edgesID = 0;
     let squareID = 0;
     const boardElements = [];
-
+  
     for (let i = 0; i < 9; i++) {
+      const rowButtons = [];
       if (i % 2 === 0) {
         for (let j = 0; j < 4; j++) {
-          boardElements.push(
+          rowButtons.push(
             <button
               key={`edge-horizontal-${edgesID}`}
               className="board-edge-horizontal"
@@ -68,7 +69,7 @@ function Board() {
       } else {
         for (let j = 0; j < 9; j++) {
           if (j % 2 === 0) {
-            boardElements.push(
+            rowButtons.push(
               <button
                 key={`edge-vertical-${edgesID}`}
                 className="board-edge-vertical"
@@ -79,7 +80,7 @@ function Board() {
             );
             edgesID++;
           } else {
-            boardElements.push(
+            rowButtons.push(
               <div
                 key={`square-${squareID}`}
                 className="board-square"
@@ -90,9 +91,18 @@ function Board() {
           }
         }
       }
+      boardElements.push(rowButtons);
     }
-
-    return <div className="board-square-container">{boardElements}</div>;
+  
+    return (
+      <div className="board-square-container">
+        {boardElements.map((rowButtons, i) => (
+          <div key={`row-buttons-${i}`} className={`row-buttons-${i}`}>
+            {rowButtons}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return renderBoard();

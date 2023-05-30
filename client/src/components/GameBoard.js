@@ -48,7 +48,7 @@ function GameBoard() {
         <p>Du bist Spieler {playerInfo.player} ({playerInfo.color})</p> 
         <p>{checkTurn()}</p>
       </div>
-      <div className="game-board">
+      <div className="game-board" style={{paddingLeft: '15%', paddingRight: '15%'}}>
         {startGame?<Board />:<></>}
       </div>
       <div className="game-controls">
