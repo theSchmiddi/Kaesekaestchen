@@ -88,12 +88,11 @@ io.on("connection", (socket) => {
     const game = gameData.get(roomId);
     if (game) {
       const { squares, edges, player1, player2 } = game;
-      const currentPlayer = player === player1 ? 1 : 2; 
+      const currentPlayer = player === player1 ? 1 : 2;
       if (currentPlayer !== game.currentPlayer) {
         console.log("Nicht am Zug");
         return;
       }
-      console.log(edges[edgesID] !== 0)
       if (edges[edgesID] !== 0) {
         console.log("Kante bereits gesetzt");
         return;
@@ -102,16 +101,16 @@ io.on("connection", (socket) => {
       let score = 0;
       for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 4; j++) {
-          const square = squares[i * 4 + j];
+          const squareID = i * 4 + j;
           if (
-            edges[i * 4 + j] !== 0 &&
-            edges[i * 4 + j + 4] !== 0 &&
-            edges[(i + 1) * 4 + j] !== 0 &&
-            edges[i * 4 + j - 1] !== 0 &&
-            square === 0
+            edges[i * 9 + j] !== 0 &&
+            edges[i * 9 + j + 4] !== 0 &&
+            edges[i * 9 + j + 5] !== 0 &&
+            edges[i * 9 + j + 9] !== 0 &&
+            squares[squareID] === 0
           ) {
             score++;
-            squares[i * 4 + j] = currentPlayer;
+            squares[squareID] = currentPlayer;
             game.currentPlayer = currentPlayer;
           }
         }
