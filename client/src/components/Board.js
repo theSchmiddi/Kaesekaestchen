@@ -15,6 +15,12 @@ function Board() {
     socket.on("gameOver", (winner) => {
       alert(`Spieler ${winner} hat gewonnen!`);
     });
+    socket.on('notYourTurn', (alertText) => {
+      alert(alertText);
+    });
+    socket.on('edgeForgiven', (alertText) => {
+      alert(alertText);
+    });
   }, []);
 
   const handleMakeMove = (event) => {
