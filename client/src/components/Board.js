@@ -5,13 +5,11 @@ import { socket, roomId } from "./StartScreen";
 function Board() {
   const [squares, setSquares] = useState(Array.from({ length: 16 }, () => 0));
   const [edges, setEdges] = useState(Array.from({ length: 40 }, () => 0));
-  const [currentPlayer, setCurrentPlayer] = useState(1);
 
   useEffect(() => {
-    socket.on("updateBoard", ({ squares, edges, nextPlayer }) => {
+    socket.on("updateBoard", ({ squares, edges }) => {
       setSquares(squares);
       setEdges(edges);
-      setCurrentPlayer(nextPlayer);
       renderBoard();
     });
     socket.on("gameOver", (winner) => {

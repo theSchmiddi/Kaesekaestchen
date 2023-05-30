@@ -30,7 +30,7 @@ function GameBoard() {
   }, []);
 
   const checkTurn = () => {
-    if(gameInfo.player === null && playerInfo.player ===1 || gameInfo.player === playerInfo.player){
+    if((gameInfo.player === null && playerInfo.player ===1) || gameInfo.player === playerInfo.player){
       return 'Du bist an der Reihe';
     } 
     return 'Der andere Spieler ist an der Reihe';
